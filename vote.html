@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Vote - Universal Vote</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="client-encryption.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #voteOptions, #voteMessage {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Submit Your Vote</h1>
+        
+        <div id="voteOptions">
+            <h2>Current Vote Options</h2>
+            <!-- Vote options will be dynamically populated here -->
+        </div>
+
+        <form id="submitVoteForm">
+            <label for="votePackage">Your Encrypted Vote:</label>
+            <textarea id="votePackage" name="votePackage" required></textarea>
+            <button type="submit">Submit Vote</button>
+          </form>
+          <div id="voteMessage"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const voteOptionsElement = document.getElementById('voteOptions');
+            const submitVoteForm = document.getElementById('submitVoteForm');
+            const voteMessageElement = document.getElementById('voteMessage');
+
+            // Fetch and display current vote options
+            try {
+                const response = await fetch(`${API_BASE_URL}/vote_options`);
+                const options = await response.json();
+                voteOptionsElement.innerHTML += options.map(option => `<p>${option}</p>`).join('');
+            } catch (error) {
+                voteOptionsElement.innerHTML = `<p>Error loading vote options: ${error.message}</p>`;
+            }
+
+            submitVoteForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const publicKey = document.getElementById('voterPublicKey').value.trim();
+                const vote = document.getElementById('vote').value.trim();
+
+                try {
+                    const result = await submitEncryptedVote(vote, publicKey);
+                    voteMessageElement.textContent = result.message;
+                    submitVoteForm.reset();
+                } catch (error) {
+                    voteMessageElement.textContent = `Error: ${error.message}`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
